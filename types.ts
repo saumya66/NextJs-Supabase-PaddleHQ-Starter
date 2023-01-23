@@ -22,17 +22,14 @@ export interface UserDetails {
   // billing_address?: Stripe.Address;
   // payment_method?: Stripe.PaymentMethod[Stripe.PaymentMethod.Type];
 }
-export interface ApiCallReturn{
-  success: boolean;
-  data : String;
-}
+
 
 //getPrices
 export interface Prices {
   success: boolean;
-  response: Response;
+  response: PricesResponse;
 }
-export interface Response {
+export interface PricesResponse {
   customer_country: string;
   products?: (Product)[] | null;
 }
