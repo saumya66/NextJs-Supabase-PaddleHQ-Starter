@@ -19,7 +19,7 @@ import { FaCheckCircle } from 'react-icons/fa';
 
 import { postData } from 'utils/helpers';
 import { useUser } from 'utils/useUser';
-import { PricesResponse } from 'types';
+import { PricesResponse, Product } from 'types';
 import { getActiveProductsWithPrices } from '@/utils/supabase-client';
 import { GetStaticPropsResult } from 'next';
 import paddleApi from '@/utils/paddleApi';
@@ -31,27 +31,40 @@ export default function Pricing({ customer_country, products }: PricesResponse )
   const router = useRouter();
   const [billingInterval, setBillingInterval] =
     useState<BillingInterval>('month');
-  const [productIdLoading, setProductIdLoading] = useState<Number>();
+  const [productIdLoading, setProductIdLoading] = useState<Number|null>();
   const { user, isLoading, subscription } = useUser();
   // console.log(customer_country,products)
-  // const handleCheckout = async (price: Price) => {
-  //   setPriceIdLoading(price.id);
-  //   if (!user) {
-  //     return router.push('/signin');
-  //   }
-  //   if (subscription) {
-  //     return router.push('/account');
-  //   }
 
-  //   try {
-  //   } catch (error) {
-  //     console.log("shit")
-  //     return alert((error as Error)?.message);
-  //   } finally {
-  //   }
-  // };
 
-  if (!products.length)
+  function checkoutClosed(data:any) {
+    console.log(data);
+    setProductIdLoading(null)
+    alert('Your purchase has been cancelled, we hope to see you again soon!');
+  }
+  
+  function checkoutComplete(data:any) {
+    console.log(data);
+    setProductIdLoading(null)
+    alert('Thanks for your purchase.');
+  }
+
+  const handleCheckout = (productId : Number) => {
+    try {
+      
+      setProductIdLoading(productId); 
+      Paddle.Checkout.open({
+        product : productId,  
+        successCallback: checkoutComplete,
+        closeCallback: checkoutClosed
+      })
+    } catch (error) {
+      console.log(error)
+      return alert((error as Error)?.message);
+    } finally {
+    }
+  };
+
+  if (!products?.length)
     return (
       <VStack spacing={2} textAlign="center">
         <Heading as="h1" fontSize="4xl" mt={6}>
@@ -136,13 +149,13 @@ export default function Pricing({ customer_country, products }: PricesResponse )
                     </List>
                     <Box w="80%" pt={7}>
                       <Button w="full" colorScheme="red" variant="outline" 
-                      onClick={()=>{setProductIdLoading(product.product_id); Paddle.Checkout.open({product : product.product_id})}} 
-                      disabled={isLoading} 
+                      onClick={()=>handleCheckout(product.product_id)} 
+                      disabled={isLoading}
                       isLoading={productIdLoading === product.product_id}>
                         {product.product_id === subscription?.product_id ? 'Manage'
                               : 'Subscribe'}
                       </Button>
-                        </Box>
+                    </Box>
                   </VStack>
                 </PriceWrapper>
             );
@@ -155,8 +168,7 @@ export default function Pricing({ customer_country, products }: PricesResponse )
 
 
 export async function getStaticProps(): Promise<GetStaticPropsResult<Props>> {
-  const res = await paddleApi.getPrices([43547,43114])
-  console.log(res)
+  const res = await paddleApi.getPrices([43547,43114,43548])
   const customer_country = res.customer_country
   const products = res.products
   return {
