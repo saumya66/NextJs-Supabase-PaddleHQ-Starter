@@ -17,10 +17,9 @@ import {
 } from '@chakra-ui/react';
 import { FaCheckCircle } from 'react-icons/fa';
 
-import { postData } from 'utils/helpers';
 import { useUser } from 'utils/useUser';
 import { PricesResponse, Product } from 'types';
-import { getActiveProductsWithPrices } from '@/utils/supabase-client';
+import { addSubscription } from '@/utils/supabase-client';
 import { GetStaticPropsResult } from 'next';
 import paddleApi from '@/utils/paddleApi';
 import { PaddleLoader } from '@/utils/paddleLoader';
@@ -32,28 +31,50 @@ export default function Pricing({ customer_country, products }: PricesResponse )
   const [billingInterval, setBillingInterval] =
     useState<BillingInterval>('month');
   const [productIdLoading, setProductIdLoading] = useState<Number|null>();
-  const { user, isLoading, subscription } = useUser();
-  // console.log(customer_country,products)
-
-
+  let { user, isLoading, subscriptions } = useUser();
+  useEffect(()=>{
+    console.log(subscriptions);
+    // subscriptions && console.log(subscriptions.map((sub)=>sub.plan_id).includes(product.product_id))
+  },[subscriptions])
+  //Post Checkout Functions 👇`
   function checkoutClosed(data:any) {
     console.log(data);
     setProductIdLoading(null)
+
     alert('Your purchase has been cancelled, we hope to see you again soon!');
   }
   
-  function checkoutComplete(data:any) {
-    console.log(data);
+  async function checkoutComplete(checkoutdata:any) {
     setProductIdLoading(null)
-    alert('Thanks for your purchase.');
-  }
+    console.log(checkoutdata.product.id);
 
+    
+    let curPlansSubs = await paddleApi.getSubscriptionUsers(checkoutdata.product.id)//Getting all subscription with a product/plan id
+    let [usersSubscription] = curPlansSubs.filter((sub)=>sub.user_email == user?.email)//filtering out the user's subscription on a plan/product from the above list (must be one) 
+    
+    console.log("User's new sub from Paddle : ", usersSubscription)
+
+    await addSubscription(usersSubscription,user?.id)
+    console.log("Added New Subscription")
+    
+    window.location.reload(); //refreshing to update the Subscription state in the context
+  }
+ 
   const handleCheckout = (productId : Number) => {
+    if(!user)
+    {
+      router.push('/signin')
+      return
+    }
     try {
-      
       setProductIdLoading(productId); 
+      let extraParams = {
+        userId : user?.id,
+        userEmail : user?.email
+      }
       Paddle.Checkout.open({
         product : productId,  
+        passthrough: JSON.stringify(extraParams),
         successCallback: checkoutComplete,
         closeCallback: checkoutClosed
       })
@@ -68,7 +89,7 @@ export default function Pricing({ customer_country, products }: PricesResponse )
     return (
       <VStack spacing={2} textAlign="center">
         <Heading as="h1" fontSize="4xl" mt={6}>
-          No Products Found.
+          no Products Found.
         </Heading>
      </VStack>
     );
@@ -108,17 +129,55 @@ export default function Pricing({ customer_country, products }: PricesResponse )
           justify="center"
           spacing={{ base: 4, lg: 10 }}
           py={10}>
+          <PriceWrapper>
+                <Box py={4} px={12}>
+                  <Text fontWeight="500" fontSize="2xl">
+                  free
+                  </Text>
+                  <HStack justifyContent="center">
+                    <Text fontSize="5xl" fontWeight="900">
+                    {`$0`}
+                    </Text>
+                    <Text fontSize="3xl" color="gray.500">
+                      /month
+                    </Text>
+                  </HStack>
+                </Box>
+                <VStack
+                  bg={useColorModeValue('gray.50', 'gray.700')}
+                  py={4}
+                  borderBottomRadius={'xl'}>
+                  <List spacing={3} textAlign="start" px={12}>
+                    <ListItem>
+                      <ListIcon as={FaCheckCircle} color="green.500" />
+                      unlimited build minutes
+                    </ListItem>
+                    <ListItem>
+                      <ListIcon as={FaCheckCircle} color="green.500" />
+                      Lorem, ipsum dolor.
+                    </ListItem>
+                    <ListItem>
+                      <ListIcon as={FaCheckCircle} color="green.500" />
+                      5TB Lorem, ipsum dolor.
+                    </ListItem>
+                  </List>
+                  <Box w="80%" pt={7}>
+                    <Button w="full" colorScheme="red" variant="outline" 
+                    // onClick={} 
+                    // isLoading={}
+                    disabled={isLoading}
+                    >
+                      get started
+                    </Button>
+                  </Box>
+                </VStack>
+              </PriceWrapper>
           {products?.map((product) => {
-            // const priceString = new Intl.NumberFormat('en-US', {
-            //   style: 'currency',
-            //   currency: price.currency,
-            //   minimumFractionDigits: 0
-            // }).format((price?.unit_amount || 0) / 100);
             return (
                 <PriceWrapper key={product.product_id}>
                   <Box py={4} px={12}>
                     <Text fontWeight="500" fontSize="2xl">
-                    {product.product_title}
+                    {product.product_title.toLowerCase()}
                     </Text>
                     <HStack justifyContent="center">
                       <Text fontSize="5xl" fontWeight="900">
@@ -149,11 +208,14 @@ export default function Pricing({ customer_country, products }: PricesResponse )
                     </List>
                     <Box w="80%" pt={7}>
                       <Button w="full" colorScheme="red" variant="outline" 
-                      onClick={()=>handleCheckout(product.product_id)} 
+                      onClick={()=> subscriptions?.length && subscriptions.map((sub)=>sub.plan_id).includes(product.product_id.toString() ) ? router.push('/account') :handleCheckout(product.product_id)} 
                       disabled={isLoading}
                       isLoading={productIdLoading === product.product_id}>
-                        {product.product_id === subscription?.product_id ? 'Manage'
-                              : 'Subscribe'}
+                        {
+                          subscriptions?.length && subscriptions.sort((a, b) => Number(b.plan_price) - Number(a.plan_price))[0].plan_id == product.product_id.toString() ? "current subscription" 
+                          : subscriptions?.length && subscriptions.map((sub)=>sub.plan_id).includes(product.product_id.toString()) ? 'manage'
+                              : 'subscribe'
+                        }
                       </Button>
                     </Box>
                   </VStack>
@@ -168,7 +230,7 @@ export default function Pricing({ customer_country, products }: PricesResponse )
 
 
 export async function getStaticProps(): Promise<GetStaticPropsResult<Props>> {
-  const res = await paddleApi.getPrices([43547,43114,43548])
+  const res = await paddleApi.getPrices([43547,43114])
   const customer_country = res.customer_country
   const products = res.products
   return {
@@ -176,6 +238,6 @@ export async function getStaticProps(): Promise<GetStaticPropsResult<Props>> {
       customer_country,
       products
     },
-    // revalidate: 60
+    revalidate: 60
   };
 }

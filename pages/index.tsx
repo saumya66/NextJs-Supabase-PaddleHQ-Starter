@@ -1,6 +1,4 @@
-import { getActiveProductsWithPrices } from 'utils/supabase-client';
 import { Product } from 'types';
-import { GetStaticPropsResult } from 'next';
 
 interface Props {
   products: Product[];
@@ -9,7 +7,7 @@ interface Props {
 export default function PricingPage({ products }: Props) {
   return( 
   <>
-    <h1>main page</h1>
+    <h1>yo page</h1>
   </> 
   )
 }

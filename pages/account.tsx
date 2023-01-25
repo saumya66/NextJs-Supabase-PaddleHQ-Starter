@@ -43,7 +43,6 @@ export const getServerSideProps = withPageAuth({ redirectTo: '/signin' });
 export default function Account({ user }: { user: User }) {
   const [loading, setLoading] = useState(false);
   const { isLoading, subscription, userDetails } = useUser();
-
   const redirectToCustomerPortal = async () => {
     setLoading(true);
     try {
@@ -57,33 +56,32 @@ export default function Account({ user }: { user: User }) {
     finally{setLoading(false);}
   };
 
-  const subscriptionPrice =
-    subscription &&
-    new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: subscription?.prices?.currency,
-      minimumFractionDigits: 0
-    }).format((subscription?.prices?.unit_amount || 0) / 100);
+  // const subscriptionPrice =
+  //   subscription &&
+  //   new Intl.NumberFormat('en-US', {
+  //     style: 'currency',
+  //     currency: subscription?.prices?.currency,
+  //     minimumFractionDigits: 0
+  //   }).format((subscription?.prices?.unit_amount || 0) / 100);
   return (
     <Box w="100%" paddingX={['2%','10%','25%']}>
       <Text mb="3rem" fontSize="3rem" fontWeight="bold" color="white">account</Text>
-      {console.log(subscription)}
       <Card
           title="Your Plan"
           description={
             subscription
-              ? `You are currently on the ${subscription?.prices?.products?.name} plan.`
+              ? `You are currently on the ${subscription?.plan_id == 43547 ? 'Superb' : subscription?.plan_id == 43114 ? 'Pro' : 'Plain'} plan.`
               : ''
           }
           footer={
             <Flex direction={'row'} justify="space-between" align="center">
               <div>
-                Manage your subscription on Stripe.
+                Manage your subscription.
               </div>
               <Button
                 isLoading ={loading}
                 disabled={loading || !subscription}
-                onClick={redirectToCustomerPortal}
+                onClick={()=>window.open(subscription?.subscription_cancel_url)}
                 display={{ base: 'none', md: 'inline-flex' }}
                 fontSize={'sm'}
                 fontWeight={600}
@@ -93,7 +91,22 @@ export default function Account({ user }: { user: User }) {
                   bg: 'green.300',
                 }}
               >
-                Open customer portal
+                Cancel
+              </Button>
+              <Button
+                isLoading ={loading}
+                disabled={loading || !subscription}
+                onClick={()=>window.open(subscription?.subscription_update_url)}
+                display={{ base: 'none', md: 'inline-flex' }}
+                fontSize={'sm'}
+                fontWeight={600}
+                color={'white'}
+                bg={'green.500'}
+                _hover={{
+                  bg: 'green.300',
+                }}
+              >
+                Update
               </Button>
             </Flex>
           }
@@ -104,7 +117,7 @@ export default function Account({ user }: { user: User }) {
                 <Spinner />
               </div>
             ) : subscription ? (
-              `${subscriptionPrice}/${subscription?.prices?.interval}`
+              `$${subscription?.plan_id == 43547 ? '11' : subscription?.plan_id == 43114 ? '8' : '0'}/month`
             ) : (
               <Link href="/">
                 <a>Choose your plan</a>
