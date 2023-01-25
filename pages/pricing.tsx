@@ -31,30 +31,26 @@ export default function Pricing({ customer_country, products }: PricesResponse )
   const [billingInterval, setBillingInterval] =
     useState<BillingInterval>('month');
   const [productIdLoading, setProductIdLoading] = useState<Number|null>();
-  let { user, isLoading, subscriptions } = useUser();
-  useEffect(()=>{
-    console.log(subscriptions);
-    // subscriptions && console.log(subscriptions.map((sub)=>sub.plan_id).includes(product.product_id))
-  },[subscriptions])
+  let { user, isLoading, subscriptions, activeSubscriptions } = useUser();
+  // useEffect(()=>{
+  //   console.log(activeSubscriptions)
+  //   console.log(subscriptions);
+  //   // subscriptions && console.log(subscriptions.map((sub)=>sub.plan_id).includes(product.product_id))
+  // },[subscriptions])
   //Post Checkout Functions 👇`
   function checkoutClosed(data:any) {
     console.log(data);
     setProductIdLoading(null)
-
     alert('Your purchase has been cancelled, we hope to see you again soon!');
   }
   
   async function checkoutComplete(checkoutdata:any) {
     setProductIdLoading(null)
-    console.log(checkoutdata.product.id);
-
-    
     let curPlansSubs = await paddleApi.getSubscriptionUsers(checkoutdata.product.id)//Getting all subscription with a product/plan id
     let [usersSubscription] = curPlansSubs.filter((sub)=>sub.user_email == user?.email)//filtering out the user's subscription on a plan/product from the above list (must be one) 
-    
     console.log("User's new sub from Paddle : ", usersSubscription)
 
-    await addSubscription(usersSubscription,user?.id)
+    await addSubscription(usersSubscription, user && user?.id)
     console.log("Added New Subscription")
     
     window.location.reload(); //refreshing to update the Subscription state in the context
@@ -208,12 +204,12 @@ export default function Pricing({ customer_country, products }: PricesResponse )
                     </List>
                     <Box w="80%" pt={7}>
                       <Button w="full" colorScheme="red" variant="outline" 
-                      onClick={()=> subscriptions?.length && subscriptions.map((sub)=>sub.plan_id).includes(product.product_id.toString() ) ? router.push('/account') :handleCheckout(product.product_id)} 
+                      onClick={()=> activeSubscriptions?.length && activeSubscriptions.map((sub)=>sub.plan_id).includes(product.product_id.toString() ) ? router.push('/account') :handleCheckout(product.product_id)} 
                       disabled={isLoading}
                       isLoading={productIdLoading === product.product_id}>
                         {
-                          subscriptions?.length && subscriptions.sort((a, b) => Number(b.plan_price) - Number(a.plan_price))[0].plan_id == product.product_id.toString() ? "current subscription" 
-                          : subscriptions?.length && subscriptions.map((sub)=>sub.plan_id).includes(product.product_id.toString()) ? 'manage'
+                          activeSubscriptions?.length && activeSubscriptions[0].plan_id == product.product_id.toString() ? "current subscription" 
+                          : activeSubscriptions?.length && activeSubscriptions.map((sub)=>sub.plan_id).includes(product.product_id.toString()) ? 'manage'
                               : 'subscribe'
                         }
                       </Button>
@@ -229,7 +225,7 @@ export default function Pricing({ customer_country, products }: PricesResponse )
 
 
 
-export async function getStaticProps(): Promise<GetStaticPropsResult<Props>> {
+export async function getStaticProps() {
   const res = await paddleApi.getPrices([43547,43114])
   const customer_country = res.customer_country
   const products = res.products

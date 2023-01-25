@@ -12,6 +12,7 @@ type UserContextType = {
   userDetails: UserDetails | null;
   isLoading: boolean;
   subscriptions: Subscription[] | null;
+  activeSubscriptions: Subscription[] | null;
 };
 
 export const UserContext = createContext<UserContextType | undefined>(
@@ -33,7 +34,8 @@ export const MyUserContextProvider = (props: Props) => {
   const accessToken = session?.access_token ?? null;
   const [isLoadingData, setIsloadingData] = useState(false);
   const [userDetails, setUserDetails] = useState<UserDetails | null>(null);
-  const [subscriptions, setSubscriptions] = useState<Subscription | null>(null);
+  const [subscriptions, setSubscriptions] = useState<Subscription[] | null>(null);
+  const [activeSubscriptions, setActiveSubscriptions] = useState<Subscription[] | null>(null);
 
   const getUserDetails = () => supabase.from('users').select('*').single();
   const getSubscription = () =>
@@ -55,7 +57,15 @@ export const MyUserContextProvider = (props: Props) => {
             setUserDetails(userDetailsPromise.value.data);
 
           if (subscriptionPromise.status === 'fulfilled')
-            setSubscriptions(subscriptionPromise.value.data);
+          {
+            setSubscriptions(subscriptionPromise.value.data && subscriptionPromise.value.data);//storing all subscriptions both active and cancelled
+            setActiveSubscriptions(             ///storing all active subscription in order of highest to lowest priced plans 
+              subscriptionPromise.value.data && 
+              subscriptionPromise.value.data
+              .filter((sub)=>sub.subscription_state == 'active')
+              .sort((a, b) => Number(b.plan_price) - Number(a.plan_price))
+            )
+          }
 
           setIsloadingData(false);
         }
@@ -63,6 +73,7 @@ export const MyUserContextProvider = (props: Props) => {
     } else if (!user && !isLoadingUser && !isLoadingData) {
       setUserDetails(null);
       setSubscriptions(null);
+      setActiveSubscriptions(null)
     }
   }, [user, isLoadingUser]);
 
@@ -71,7 +82,8 @@ export const MyUserContextProvider = (props: Props) => {
     user,
     userDetails,
     isLoading: isLoadingUser || isLoadingData,
-    subscriptions
+    subscriptions,
+    activeSubscriptions
   };
 
   return <UserContext.Provider value={value} {...props} />;

@@ -2,29 +2,10 @@ import {
   createBrowserSupabaseClient,
   User
 } from '@supabase/auth-helpers-nextjs';
-import { ProductWithPrice } from 'types';
-import type { Database } from 'types_db';
+import { PaddleSubscriptionUser, Subscription, SubscriptionCancelWebhookRequest } from 'types';
 
-export const supabase = createBrowserSupabaseClient<Database>();
+export const supabase = createBrowserSupabaseClient();
 
-export const getActiveProductsWithPrices = async (): Promise<
-  ProductWithPrice[]
-> => {
-  const { data, error } = await supabase
-    .from('products')
-    .select('*, prices(*)')
-    .eq('active', true)
-    .eq('prices.active', true)
-    .order('metadata->index')
-    .order('unit_amount', { foreignTable: 'prices' });
-
-  if (error) {
-    console.log(error.message);
-    throw error;
-  }
-  // TODO: improve the typing here.
-  return (data as any) || [];
-};
 
 export const updateUserName = async (user: User, name: string) => {
   await supabase
@@ -35,7 +16,7 @@ export const updateUserName = async (user: User, name: string) => {
     .eq('id', user.id);
 };
 
-export const addSubscription = async (usersSubscription, id) => {
+export const addSubscription = async (usersSubscription:PaddleSubscriptionUser, id:string|null) => {
   const { data, error } = await supabase
   .from('subscriptions')
   .insert([
@@ -53,6 +34,7 @@ export const addSubscription = async (usersSubscription, id) => {
       subscription_cancel_url: usersSubscription.cancel_url,
       plan_price:usersSubscription.last_payment.amount,
       currency:usersSubscription.last_payment.currency,
+      subscription_cancelled_at:null,
       trial_start: null,
       trial_end: null,
     }
@@ -63,29 +45,16 @@ export const addSubscription = async (usersSubscription, id) => {
   }
 }
 
-export const updateSubscription = async (usersSubscription, id) => {
+export const cancelSubscription = async (subscription_id:string , status:string,cancelled_at:string) => {
   const { data, error } = await supabase
   .from('subscriptions')
   .update(
     {
-      subscription_id : usersSubscription.subscription_id, 
-      user_id: id,
-      plan_id: usersSubscription.plan_id,
-      subscription_state: usersSubscription.state,
-      cur_subscription_created_at: usersSubscription.last_payment.date,
-      cur_subscription_ends_at: usersSubscription.next_payment.date,
-      user_email: usersSubscription.user_email,
-      marketing_consent: usersSubscription.marketing_consent,
-      subscription_update_url: usersSubscription.update_url,
-      subscription_cancel_url: usersSubscription.cancel_url,
-      plan_price:usersSubscription.last_payment.amount,
-      currency:usersSubscription.last_payment.currency,
-      trial_start: null,
-      trial_end: null,
-      metadata: null,
+      subscription_state: status,
+      subscription_cancelled_at:cancelled_at,
     }
     )
-   .eq('user_id', id)
+   .eq('subscription_id', subscription_id)
   if(error){
     console.log(error)
     throw error;

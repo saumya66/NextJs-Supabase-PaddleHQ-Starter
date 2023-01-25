@@ -51,13 +51,42 @@ export interface PaddleSubscription {
   list_price: PriceOrListPrice;
 }
 
+//getSubscriptionUsers
+export interface PaddleSubscriptionUser {
+  subscription_id: number;
+  plan_id: number;
+  user_id: number;
+  user_email: string;
+  marketing_consent: boolean;
+  update_url: string;
+  cancel_url: string;
+  state: string;
+  signup_date: string;
+  last_payment: LastPaymentOrNextPayment;
+  payment_information: PaymentInformation;
+  quantity: number;
+  next_payment: LastPaymentOrNextPayment;
+}
+export interface LastPaymentOrNextPayment {
+  amount: number;
+  currency: string;
+  date: string;
+}
+export interface PaymentInformation {
+  payment_method: string;
+  card_type: string;
+  last_four_digits: string;
+  expiry_date: string;
+}
+
+
 
 declare global {
   var Paddle: any;
 }
 
 //webhooks 
-export interface SubscriptionCancel {
+export interface SubscriptionCancelWebhookRequest {
   alert_id: string;
   alert_name: string;
   cancellation_effective_date: string;
@@ -83,6 +112,7 @@ export interface SubscriptionCancel {
 export interface Subscription{
   cur_subscription_created_at: string;
   cur_subscription_ends_at: string;
+  subscription_cancelled_at:string | null;
   currency: string;
   marketing_consent: boolean;
   metadata?: null;
@@ -90,7 +120,7 @@ export interface Subscription{
   plan_price: string;
   subscription_cancel_url: string;
   subscription_id: string;
-  subscription_state: string;
+  subscription_state: string | any;
   subscription_update_url: string;
   trial_end?: null;
   trial_start?: null;

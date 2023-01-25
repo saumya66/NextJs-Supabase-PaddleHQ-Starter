@@ -1,5 +1,5 @@
 import axios from "axios"
-import { PricesResponse } from "types";
+import { PaddleSubscriptionUser, PricesResponse } from "types";
 
 export interface PaddleApi{
     getPrices(this:Number[]) : ()=>Promise<PricesResponse>
@@ -20,7 +20,7 @@ const paddleApi={
         }
     },
 
-    getSubscriptionUsers : async function getSubscriptionUsers(plan_id:number){
+    getSubscriptionUsers : async function getSubscriptionUsers(plan_id:number):Promise<PaddleSubscriptionUser[]>{
         let res:any;
         console.log(process.env.NEXT_PUBLIC_PADDLE_VENDOR_ID, process.env.NEXT_PUBLIC_PADDLE_AUTH_KEY)
         const options = {
