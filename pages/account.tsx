@@ -64,7 +64,7 @@ export default function Account({ user }: { user: User }) {
           title="Your Plan"
           description={
             activeSubscriptions
-              ? `You are currently on the ${Object.keys(planIdToPlanName).includes(activeSubscriptions[0].plan_id) ? planIdToPlanName[activeSubscriptions[0].plan_id] : '0'} plan.`
+              ? `You are currently on the ${Object.keys(planIdToPlanName).includes(activeSubscriptions[0].plan_id) ? planIdToPlanName[activeSubscriptions[0].plan_id] : 'free'} plan.`
               : ''
           }
           footer={
@@ -91,7 +91,7 @@ export default function Account({ user }: { user: User }) {
                           bg: 'green.300',
                         }}
                       >
-                        {subscription.subscription_state=='deleted' ? `cancelled on ${new Date(subscription.subscription_cancelled_at).toUTCString()}` : "cancel"}
+                        {subscription.subscription_state=='deleted' ? `cancelled on ${subscription.subscription_cancelled_at && new Date(subscription.subscription_cancelled_at).toUTCString()}` : "cancel"}
                       </Button>
                       <Button
                         isLoading ={loading}

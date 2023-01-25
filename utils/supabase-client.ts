@@ -49,10 +49,10 @@ export const cancelSubscription = async (subscription_id:string , status:string,
   const { data, error } = await supabase
   .from('subscriptions')
   .update(
-    {
-      subscription_state: status,
-      subscription_cancelled_at:cancelled_at,
-    }
+      {
+        subscription_state: status,
+        subscription_cancelled_at:cancelled_at,
+      }
     )
    .eq('subscription_id', subscription_id)
   if(error){

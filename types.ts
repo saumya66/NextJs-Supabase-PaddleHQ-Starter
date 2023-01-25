@@ -112,7 +112,7 @@ export interface SubscriptionCancelWebhookRequest {
 export interface Subscription{
   cur_subscription_created_at: string;
   cur_subscription_ends_at: string;
-  subscription_cancelled_at:string | null;
+  subscription_cancelled_at:string | Date | number | null;
   currency: string;
   marketing_consent: boolean;
   metadata?: null;

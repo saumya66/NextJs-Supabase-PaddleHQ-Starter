@@ -1,8 +1,3 @@
-import {
-  upsertProductRecord,
-  upsertPriceRecord,
-  manageSubscriptionStatusChange
-} from 'utils/supabase-admin';
 import { NextApiRequest, NextApiResponse } from 'next';
 import { verifyPaddleWebhook } from 'verify-paddle-webhook';
 import { cancelSubscription } from '@/utils/supabase-client';

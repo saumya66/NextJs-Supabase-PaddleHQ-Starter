@@ -6,7 +6,7 @@ interface Props {
 
 export default function PricingPage({ products }: Props) {
   return( 
-  <>
+  <>  
     <h1>yo page</h1>
   </> 
   )
