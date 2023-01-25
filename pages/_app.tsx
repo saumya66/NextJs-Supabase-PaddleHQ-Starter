@@ -8,12 +8,11 @@ import { SessionContextProvider } from '@supabase/auth-helpers-react';
 import { createBrowserSupabaseClient } from '@supabase/auth-helpers-nextjs';
 import { AppProps } from 'next/app';
 import { MyUserContextProvider } from 'utils/useUser';
-import type { Database } from 'types_db';
 import { ChakraProvider } from '@chakra-ui/react';
 
 export default function MyApp({ Component, pageProps }: AppProps) {
   const [supabaseClient] = useState(() =>
-    createBrowserSupabaseClient<Database>()
+    createBrowserSupabaseClient()
   );
   useEffect(() => {
     document.body.classList?.remove('loading');
