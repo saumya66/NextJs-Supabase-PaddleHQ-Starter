@@ -2,7 +2,6 @@ import Link from 'next/link';
 import { useState, ReactNode } from 'react';
 
 import { useUser } from 'utils/useUser';
-import { postData } from 'utils/helpers';
 
 import { User } from '@supabase/supabase-js';
 import { withPageAuth } from '@supabase/auth-helpers-nextjs';
@@ -43,18 +42,7 @@ export const getServerSideProps = withPageAuth({ redirectTo: '/signin' });
 export default function Account({ user }: { user: User }) {
   const [loading, setLoading] = useState(false);
   const { isLoading, subscriptions, userDetails , activeSubscriptions} = useUser();
-  const redirectToCustomerPortal = async () => {
-    setLoading(true);
-    try {
-      const { url, error } = await postData({
-        url: '/api/create-portal-link'
-      });
-      window.location.assign(url);
-    } catch (error) {
-      if (error) return alert((error as Error).message);
-    }
-    finally{setLoading(false);}
-  };
+
 
 
   return (
