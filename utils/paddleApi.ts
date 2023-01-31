@@ -14,7 +14,7 @@ const paddleApi={
             res = await axios.get(`https://sandbox-checkout.paddle.com/api/2.0/prices/?product_ids=${product_ids.join(',')}`)
             return res.data.response
         }
-        catch(err){
+        catch(err:any){
             console.log(err)
             throw new Error(err)
         }
@@ -37,7 +37,7 @@ const paddleApi={
             res = await axios(options)
             return res.data.response
         }
-        catch(err){
+        catch(err:any){
             console.log(err)
             throw new Error(err)
             // throw new Error(res?.statusText)
