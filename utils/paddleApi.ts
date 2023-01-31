@@ -15,8 +15,8 @@ const paddleApi={
             return res.data.response
         }
         catch(err){
-            console.log(res?.status,res?.statusText)
-            throw new Error(res?.statusText)
+            console.log(err)
+            throw new Error(err)
         }
     },
 
@@ -38,8 +38,9 @@ const paddleApi={
             return res.data.response
         }
         catch(err){
-            console.log(res?.status,res?.statusText)
-            throw new Error(res?.statusText)
+            console.log(err)
+            throw new Error(err)
+            // throw new Error(res?.statusText)
         }
     } 
     

@@ -20,7 +20,6 @@ import { FaCheckCircle } from 'react-icons/fa';
 import { useUser } from 'utils/useUser';
 import { PricesResponse, Product } from 'types';
 import { addSubscription } from '@/utils/supabase-client';
-import { GetStaticPropsResult } from 'next';
 import paddleApi from '@/utils/paddleApi';
 import { PaddleLoader } from '@/utils/paddleLoader';
 
@@ -32,11 +31,11 @@ export default function Pricing({ customer_country, products }: PricesResponse )
     useState<BillingInterval>('month');
   const [productIdLoading, setProductIdLoading] = useState<Number|null>();
   let { user, isLoading, subscriptions, activeSubscriptions } = useUser();
-  // useEffect(()=>{
-  //   console.log(activeSubscriptions)
-  //   console.log(subscriptions);
-  //   // subscriptions && console.log(subscriptions.map((sub)=>sub.plan_id).includes(product.product_id))
-  // },[subscriptions])
+  useEffect(()=>{
+    console.log(activeSubscriptions)
+    console.log(subscriptions);
+    // subscriptions && console.log(subscriptions.map((sub)=>sub.plan_id).includes(product.product_id))
+  },[subscriptions])
   //Post Checkout Functions 👇`
   function checkoutClosed(data:any) {
     console.log(data);

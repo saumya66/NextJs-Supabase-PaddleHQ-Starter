@@ -51,14 +51,14 @@ export default function Account({ user }: { user: User }) {
       <Card
           title="Your Plan"
           description={
-            activeSubscriptions
+            activeSubscriptions?.length
               ? `You are currently on the ${Object.keys(planIdToPlanName).includes(activeSubscriptions[0].plan_id) ? planIdToPlanName[activeSubscriptions[0].plan_id] : 'free'} plan.`
               : ''
           }
           footer={
             <Flex direction={'column'} >
               {
-                subscriptions?.map((subscription)=>{
+                subscriptions?.reverse().map((subscription)=>{
                 return(<Flex direction={{base:'column',md:'row'}} justify="space-between" align="center" mb="1rem" >
                     <div>
                      {Object.keys(planIdToPlanName).includes(subscription.plan_id) ? planIdToPlanName[subscription.plan_id] : 'plain'}
@@ -111,10 +111,10 @@ export default function Account({ user }: { user: User }) {
               <div className="h-12 mb-6">
                 <Spinner />
               </div>
-            ) : activeSubscriptions ? (
+            ) : activeSubscriptions?.length ? (
                `$${Object.keys(planIdToPrice).includes(activeSubscriptions[0].plan_id) ? planIdToPrice[activeSubscriptions[0].plan_id] : '0'}/month`
             ) : (
-              <Link href="/">
+              <Link href="/pricing">
                 <a>Choose your plan</a>
               </Link>
             )}
