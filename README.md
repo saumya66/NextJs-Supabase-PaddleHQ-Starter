@@ -2,7 +2,7 @@
  
 # Backend Monorepo
 
-This is a lerna powered monorepo that holds together all the backend services/packages used by client-side apps of Leap.Club.
+This is a lerna powered monorepo that holds together all the backend servers used by the client-side apps of Leap.Club.
 
 ## Prerequisites
 
@@ -26,8 +26,36 @@ This is a lerna powered monorepo that holds together all the backend services/pa
     ```
     
  ## Structure of the Monorepo:
- Here's a high level overview of the structure of the monorepo : 
+ Here's a very high level overview of some important parts of our monorepo to help you get the gist of how things work : <br/>
+ ```
+ ├──lc-backend
+     ├──packages
+     |  ├──main-app
+     |  ├──dashboard-app
+     └──package.json   
+ ```
+ The `lc-backend` is our root folder. And the folder `package` contain multiple express backend servers/packages we use. 
+ The `main-app` serves as the backend server to our mobile app and web app. 
+
+ Such a monorepo is possible due to Lerna. To know more about it do take a look at it's [documentation](https://lerna.js.org/docs/introduction).
  
- 
-  #### Adding environment configurations:
-  To get the environment confi
+  ## Adding environment configurations:
+  To add the environment configurations to any of the backend servers follow these steps. In this example let's consider our `main-app` server :
+  - Reach out to an appropriate person in the team to get the environment configurations.
+  - Create a new file named `.env` in `lc-backend\packages\main-app`.
+  - Copy-Paste the received configurations into the `.env` file.
+  
+  And we are done setting up the project! ✅
+  
+  ## Running the servers:
+  Let's say you want to run the `main-app`, here's how to do it :
+  - Open the command line and be at the root level i.e `lc-backend/`
+  - To run the server in staging : 
+     ```
+     npm run main-app:staging
+     ```
+   - To run the server in production (make sure to change environment configuration from staging to production configuration): 
+     ```
+     npm run main-app:prod
+     ```
+   
